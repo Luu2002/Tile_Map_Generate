@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab 4 Tile Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .map-overlay { position: absolute; top: 10px; right: 10px; background: white; padding: 10px; z-index: 1; }
+        .map-overlay select, .map-overlay label { display: block; margin: 5px 0; }
+        .map-overlay input { margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="map-overlay" id="layerControl">
+        <select id="baseLayerSelect">
+            <option value="Grayscale">Grayscale</option>
+            <option value="Streets">Streets</option>
+            <option value="Satellite">Satellite</option>
+        </select>
+
+        <label><input type="checkbox" id="toggleTile1"> Base Tile</label>
+        <label><input type="checkbox" id="toggleTile2"> Data Tile</label>
+        <label><input type="checkbox" id="toggleTile3"> Base + Data Tile</label>
+        <label><input type="checkbox" id="toggleTile4"> Theme Tile</label>
+    </div>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibHUyMDAyIiwiYSI6ImNsc2g0eGdsejEwdHcyanBxdzVwamx5bHcifQ.KgXIKIWlo6Nx7_6w_dVo6Q';
+
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v10',
+            center: [-122.331739, 47.612833],
+            zoom: 12.5
+        });
+
+        map.on('load', function() {
+            map.addSource('tile1', {
+                'type': 'raster',
+                'tiles': ['assets/Base_tile/{z}/{x}/{y}.png'],
+                'tileSize': 256
+            });
+            map.addLayer({
+                'id': 'tile1',
+                'type': 'raster',
+                'source': 'tile1',
+                'layout': {'visibility': 'none'}
+            });
+
+            map.addSource('tile2', {
+                'type': 'raster',
+                'tiles': ['assets/Data_tile/{z}/{x}/{y}.png'],
+                'tileSize': 256
+            });
+            map.addLayer({
+                'id': 'tile2',
+                'type': 'raster',
+                'source': 'tile2',
+                'layout': {'visibility': 'none'}
+            });
+
+            map.addSource('tile3', {
+                'type': 'raster',
+                'tiles': ['assets/Base_data_tile/{z}/{x}/{y}.png'],
+                'tileSize': 256
+            });
+            map.addLayer({
+                'id': 'tile3',
+                'type': 'raster',
+                'source': 'tile3',
+                'layout': {'visibility': 'none'}
+            });
+
+            map.addSource('tile4', {
+                'type': 'raster',
+                'tiles': ['assets/Theme_tile/{z}/{x}/{y}.png'],
+                'tileSize': 256
+            });
+            map.addLayer({
+                'id': 'tile4',
+                'type': 'raster',
+                'source': 'tile4',
+                'layout': {'visibility': 'none'}
+            });
+
+            document.getElementById('toggleTile1').addEventListener('change', function(e) {
+                map.setLayoutProperty('tile1', 'visibility', e.target.checked ? 'visible' : 'none');
+            });
+
+            document.getElementById('toggleTile2').addEventListener('change', function(e) {
+                map.setLayoutProperty('tile2', 'visibility', e.target.checked ? 'visible' : 'none');
+            });
+
+            document.getElementById('toggleTile3').addEventListener('change', function(e) {
+                map.setLayoutProperty('tile3', 'visibility', e.target.checked ? 'visible' : 'none');
+            });
+
+            document.getElementById('toggleTile4').addEventListener('change', function(e) {
+                map.setLayoutProperty('tile4', 'visibility', e.target.checked ? 'visible' : 'none');
+            });
+        });
+
+        document.getElementById('baseLayerSelect').addEventListener('change', function(e) {
+          var styleId = e.target.value;
+          var styleUrl;
+
+          if (styleId === 'Grayscale') {
+            styleUrl = 'mapbox://styles/mapbox/light-v10';
+          } else if (styleId === 'Satellite') {
+            styleUrl = 'mapbox://styles/mapbox/satellite-streets-v11';
+          } else {
+            styleUrl = 'mapbox://styles/mapbox/' + styleId.toLowerCase() + '-v10';
+          }
+          map.setStyle(styleUrl);
+
+          map.once('style.load', function() {
+            map.addSource('tile1', {
+              'type': 'raster',
+              'tiles': ['assets/Base_tile/{z}/{x}/{y}.png'],
+              'tileSize': 256
+            });
+
+            map.addSource('tile2', {
+              'type': 'raster',
+              'tiles': ['assets/Data_tile/{z}/{x}/{y}.png'],
+              'tileSize': 256
+            });
+
+            map.addSource('tile3', {
+              'type': 'raster',
+              'tiles': ['assets/Base_data_tile/{z}/{x}/{y}.png'],
+              'tileSize': 256
+            });
+
+            map.addSource('tile4', {
+              'type': 'raster',
+              'tiles': ['assets/Theme_tile/{z}/{x}/{y}.png'],
+              'tileSize': 256
+            });
+
+          map.addLayer({
+            'id': 'tile1',
+            'type': 'raster',
+            'source': 'tile1',
+            'layout': {'visibility': document.getElementById('toggleTile1').checked ? 'visible' : 'none'}
+          });
+
+          map.addLayer({
+            'id': 'tile2',
+            'type': 'raster',
+            'source': 'tile2',
+            'layout': {'visibility': document.getElementById('toggleTile2').checked ? 'visible' : 'none'}
+          });
+
+          map.addLayer({
+            'id': 'tile3',
+            'type': 'raster',
+            'source': 'tile3',
+            'layout': {'visibility': document.getElementById('toggleTile3').checked ? 'visible' : 'none'}
+          });
+
+          map.addLayer({
+            'id': 'tile4',
+            'type': 'raster',
+            'source': 'tile4',
+            'layout': {'visibility': document.getElementById('toggleTile4').checked ? 'visible' : 'none'}
+          });
+        });
+      });
+    </script>
+</body>
+</html>
